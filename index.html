@@ -1,10 +1,515 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My Website</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Barcode Scanner App</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #4a5568;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            background: white;
+            transition: all 0.3s ease;
+            -webkit-appearance: none;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(72, 187, 120, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            color: white;
+        }
+
+        .camera-section {
+            text-align: center;
+            margin: 25px 0;
+        }
+
+        #scanner-container {
+            margin: 20px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        #photo-preview {
+            max-width: 100%;
+            border-radius: 12px;
+            margin: 15px 0;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .questions-section {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 25px 0;
+        }
+
+        .question-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .question-group:last-child {
+            border-bottom: none;
+        }
+
+        .question-text {
+            font-weight: 500;
+            color: #4a5568;
+            flex: 1;
+            margin-right: 15px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .radio-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #667eea;
+        }
+
+        .radio-option label {
+            font-weight: 500;
+            color: #4a5568;
+            margin: 0;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .status-success {
+            background: rgba(72, 187, 120, 0.1);
+            color: #38a169;
+            border: 2px solid rgba(72, 187, 120, 0.3);
+        }
+
+        .status-error {
+            background: rgba(245, 101, 101, 0.1);
+            color: #e53e3e;
+            border: 2px solid rgba(245, 101, 101, 0.3);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+                border-radius: 15px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to My Website</h1>
-    <p>This is my first GitHub Pages site!</p>
+    <div class="container">
+        <div class="header">
+            <h1>📱 Barcode Scanner & Data Collection</h1>
+            <p>Scan, capture, and submit your data seamlessly</p>
+        </div>
+
+        <form id="dataForm">
+            <!-- Date Field -->
+            <div class="form-group">
+                <label for="date">Date</label>
+                <input type="date" id="date" name="date" class="form-control" required>
+            </div>
+
+            <!-- Barcode Section -->
+            <div class="form-group">
+                <label for="barcode">Barcode</label>
+                <input type="text" id="barcode" name="barcode" class="form-control" placeholder="Scanned barcode will appear here" readonly>
+            </div>
+
+            <div class="camera-section">
+                <button type="button" id="startScanBtn" class="btn btn-primary">📷 Start Barcode Scanner</button>
+                <button type="button" id="stopScanBtn" class="btn btn-danger hidden">Stop Scanner</button>
+                <div id="scanner-container" class="hidden"></div>
+            </div>
+
+            <!-- Photo Section -->
+            <div class="camera-section">
+                <button type="button" id="takePhotoBtn" class="btn btn-secondary">📸 Take Photo of Barcode</button>
+                <input type="file" id="photoInput" accept="image/*" capture="camera" style="display: none;">
+                <img id="photo-preview" class="hidden" alt="Barcode photo preview">
+            </div>
+
+            <!-- Questions Section -->
+            <div class="questions-section">
+                <h3 style="margin-bottom: 20px; color: #4a5568;">Questions</h3>
+                
+                <div class="question-group">
+                    <span class="question-text">1. Is the product in good condition?</span>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="q1_yes" name="question1" value="yes" required>
+                            <label for="q1_yes">Yes</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="q1_no" name="question1" value="no">
+                            <label for="q1_no">No</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="question-group">
+                    <span class="question-text">2. Is the barcode clearly visible?</span>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="q2_yes" name="question2" value="yes" required>
+                            <label for="q2_yes">Yes</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="q2_no" name="question2" value="no">
+                            <label for="q2_no">No</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="question-group">
+                    <span class="question-text">3. Is the packaging intact?</span>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="q3_yes" name="question3" value="yes" required>
+                            <label for="q3_yes">Yes</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="q3_no" name="question3" value="no">
+                            <label for="q3_no">No</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="question-group">
+                    <span class="question-text">4. Does the item match description?</span>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="q4_yes" name="question4" value="yes" required>
+                            <label for="q4_yes">Yes</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="q4_no" name="question4" value="no">
+                            <label for="q4_no">No</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="question-group">
+                    <span class="question-text">5. Is the price tag present?</span>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="q5_yes" name="question5" value="yes" required>
+                            <label for="q5_yes">Yes</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="q5_no" name="question5" value="no">
+                            <label for="q5_no">No</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="question-group">
+                    <span class="question-text">6. Would you recommend this item?</span>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="q6_yes" name="question6" value="yes" required>
+                            <label for="q6_yes">Yes</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="q6_no" name="question6" value="no">
+                            <label for="q6_no">No</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="form-group">
+                <label for="comments">Comments</label>
+                <textarea id="comments" name="comments" class="form-control" placeholder="Add any additional comments here..." rows="4"></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary">✅ Submit Data</button>
+        </form>
+
+        <div id="statusMessage" class="hidden"></div>
+    </div>
+
+    <script>
+        // Global variables
+        let html5QrcodeScanner = null;
+        let capturedPhoto = null;
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set today's date
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+
+            // Initialize event listeners
+            initializeEventListeners();
+        });
+
+        function initializeEventListeners() {
+            // Scanner buttons
+            document.getElementById('startScanBtn').addEventListener('click', startScanner);
+            document.getElementById('stopScanBtn').addEventListener('click', stopScanner);
+
+            // Photo capture
+            document.getElementById('takePhotoBtn').addEventListener('click', triggerPhotoCapture);
+            document.getElementById('photoInput').addEventListener('change', handlePhotoCapture);
+
+            // Form submission
+            document.getElementById('dataForm').addEventListener('submit', handleFormSubmission);
+        }
+
+        function startScanner() {
+            const scannerContainer = document.getElementById('scanner-container');
+            const startBtn = document.getElementById('startScanBtn');
+            const stopBtn = document.getElementById('stopScanBtn');
+
+            scannerContainer.classList.remove('hidden');
+            startBtn.classList.add('hidden');
+            stopBtn.classList.remove('hidden');
+
+            html5QrcodeScanner = new Html5Qrcode("scanner-container");
+            
+            const config = {
+                fps: 10,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0
+            };
+
+            html5QrcodeScanner.start(
+                { facingMode: "environment" },
+                config,
+                onScanSuccess,
+                onScanFailure
+            ).catch(err => {
+                showMessage('Camera access denied or not available', 'error');
+                stopScanner();
+            });
+        }
+
+        function stopScanner() {
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.stop().then(() => {
+                    html5QrcodeScanner.clear();
+                    resetScannerUI();
+                }).catch(err => {
+                    resetScannerUI();
+                });
+            } else {
+                resetScannerUI();
+            }
+        }
+
+        function resetScannerUI() {
+            const scannerContainer = document.getElementById('scanner-container');
+            const startBtn = document.getElementById('startScanBtn');
+            const stopBtn = document.getElementById('stopScanBtn');
+
+            scannerContainer.classList.add('hidden');
+            startBtn.classList.remove('hidden');
+            stopBtn.classList.add('hidden');
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            document.getElementById('barcode').value = decodedText;
+            showMessage(`Barcode scanned successfully: ${decodedText}`, 'success');
+            stopScanner();
+        }
+
+        function onScanFailure(error) {
+            // Silent failure - scanning continues
+        }
+
+        function triggerPhotoCapture() {
+            document.getElementById('photoInput').click();
+        }
+
+        function handlePhotoCapture(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('photo-preview');
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                    capturedPhoto = file;
+                    showMessage('Photo captured successfully!', 'success');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleFormSubmission(event) {
+            event.preventDefault();
+            
+            // Collect form data
+            const formData = collectFormData();
+            
+            // Show submission message
+            showMessage('Form submitted successfully! (Integration with Google Sheets and Photos required)', 'success');
+            
+            // Here you would implement the actual Google Sheets and Google Photos integration
+            console.log('Form Data:', formData);
+            console.log('Photo:', capturedPhoto);
+        }
+
+        function collectFormData() {
+            const form = document.getElementById('dataForm');
+            const formData = new FormData(form);
+            const data = {};
+            
+            for (let [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+            
+            return data;
+        }
+
+        function showMessage(message, type) {
+            const statusMessage = document.getElementById('statusMessage');
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message status-${type}`;
+            statusMessage.classList.remove('hidden');
+            
+            setTimeout(() => {
+                statusMessage.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Handle orientation changes for better iPhone experience
+        window.addEventListener('orientationchange', function() {
+            setTimeout(() => {
+                if (html5QrcodeScanner && html5QrcodeScanner.getState() === Html5QrcodeScannerState.SCANNING) {
+                    stopScanner();
+                    setTimeout(startScanner, 500);
+                }
+            }, 500);
+        });
+    </script>
 </body>
 </html>
